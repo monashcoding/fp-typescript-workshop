@@ -1,0 +1,19 @@
+{
+	"name": "mac-functional-programming-workshop",
+	"version": "0.0.1",
+	"private": true,
+	"publishConfig": {
+		"access": "restricted"
+	},
+	"type": "module",
+	"scripts": {
+		"build": "tsc -b",
+		"watch": "tsc -b -w",
+		"test": "vitest"
+	},
+	"devDependencies": {
+		"@types/node": "^20.12.7",
+		"vite": "^5.2.1",
+		"vitest": "^1.4.0"
+	}
+}
