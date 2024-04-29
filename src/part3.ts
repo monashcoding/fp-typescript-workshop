@@ -38,7 +38,42 @@ interface Student {
  * - The headers will be in the same order as the keys in the `Student`
  *   interface above (feel free to not assume this one for a challenge!)
  */
-const parseStudentsCSV = (csv: string): readonly Student[] => IMPLEMENT_THIS
+const parseStudentsCSV = (csv: string): readonly Student[] =>
+	csv
+		.trim()
+		.split('\n')
+		.slice(1)
+		.map(line => {
+			const [id, givenName, familyName, course, assignments, test] =
+				line.split(',')
+			return {
+				id: Number(id),
+				givenName,
+				familyName,
+				course,
+				assignments: assignments.split('|').map(Number),
+				tests: test.split('|').map(Number),
+			}
+		})
+
+// second version which doesn't assume the headers will always be in that same order
+const parseStudentsCSVChallenge = (csv: string): readonly Student[] => {
+	const [header, ...lines] = csv
+		.trim()
+		.split('\n')
+		.map(line => line.split(','))
+	return lines.map((xs): Student => {
+		const {id, assignments, tests, ...rest} = xs
+			.map((s, i) => ({[header[i]]: s}))
+			.reduce((acc, x) => ({...acc, ...x}), {}) as Record<keyof Student, string>
+		return {
+			...rest,
+			id: Number(id),
+			assignments: assignments.split('|').map(Number),
+			tests: tests.split('|').map(Number),
+		}
+	})
+}
 
 const students = parseStudentsCSV(studentsCSV)
 
@@ -57,20 +92,26 @@ const students = parseStudentsCSV(studentsCSV)
  * respectively. Each assignment is out of 50 marks and each test is out of 10
  * marks.
  */
-const calculateUnitMark = ({assignments, tests}: Student) => IMPLEMENT_THIS
+const calculateUnitMark = ({assignments, tests}: Student) => {
+	const [a1, a2, a3] = assignments.map(a => a / 50)
+	return (
+		100 * (0.25 * a1 + 0.3 * a2 + 0.15 * a3 + 0.1 * sum(tests.map(t => t / 10)))
+	)
+}
 
 /**
  * Calculates the average of an array of numbers.
  *
  * You can assume that the array will never be empty.
  */
-const average = (xs: readonly number[]): number => IMPLEMENT_THIS
+const average = (xs: readonly number[]): number => sum(xs) / xs.length
 
 /** Calculates the average unit mark for an array of students. */
-const averageUnitMark = (students: readonly Student[]): number => IMPLEMENT_THIS
+const averageUnitMark = (students: readonly Student[]): number =>
+	average(students.map(calculateUnitMark))
 
 /** The average unit mark for all students. */
-const overallAverageUnitMark: number = IMPLEMENT_THIS
+const overallAverageUnitMark: number = averageUnitMark(students)
 
 /**
  * All the Bachelor of Information Technology and double degrees with IT course
@@ -105,18 +146,22 @@ const csDegrees: ReadonlySet<string> = new Set([
 /** Checks if a student is studying a course in a given set of courses. */
 const isStudyingCourseIn =
 	(courses: ReadonlySet<string>) =>
-	(student: Student): boolean =>
-		IMPLEMENT_THIS
+	({course}: Student): boolean =>
+		courses.has(course)
 
 /** All the students studying bachelor of IT (including double degrees). */
-const itStudents: readonly Student[] = IMPLEMENT_THIS
+const itStudents: readonly Student[] = students.filter(
+	isStudyingCourseIn(itDegrees),
+)
 /** All the students studying bachelor of CS (including double degrees). */
-const csStudents: readonly Student[] = IMPLEMENT_THIS
+const csStudents: readonly Student[] = students.filter(
+	isStudyingCourseIn(csDegrees),
+)
 
 /** The average unit mark for students studying IT. */
-const itAverageUnitMark: number = IMPLEMENT_THIS
+const itAverageUnitMark: number = averageUnitMark(itStudents)
 /** The average unit mark for students studying CS. */
-const csAverageUnitMark: number = IMPLEMENT_THIS
+const csAverageUnitMark: number = averageUnitMark(csStudents)
 
 const allGrades = ['HD', 'D', 'C', 'P', 'N'] as const
 type Grade = (typeof allGrades)[number]
@@ -126,13 +171,27 @@ type Grade = (typeof allGrades)[number]
  * (You need to round the mark - for example, 79.5 is an HD.)
  * @see https://www.monash.edu/students/admin/assessmensts/results/results-legend
  */
-const markToGrade = (mark: number): Grade => IMPLEMENT_THIS
+const markToGrade = (mark: number): Grade => {
+	const rounded = Math.round(mark)
+	return rounded >= 80
+		? 'HD'
+		: rounded >= 70
+		? 'D'
+		: rounded >= 60
+		? 'C'
+		: rounded >= 50
+		? 'P'
+		: 'N'
+}
 
 /**
  * Calculates a student's letter grade.
  * See if you can use `compose` to implement this!
  */
-const calculateUnitGrade: (student: Student) => Grade = IMPLEMENT_THIS
+const calculateUnitGrade: (student: Student) => Grade = compose(
+	markToGrade,
+	calculateUnitMark,
+)
 
 const equals =
 	<T>(other: T) =>
@@ -145,7 +204,9 @@ const equals =
  * See if you can implement this without any anonymous functions
  * (hint: use compose)
  */
-const failRate: number = IMPLEMENT_THIS
+const failRate: number =
+	students.filter(compose(equals('N'), calculateUnitGrade)).length /
+	students.length
 
 /**
  * A object where each key is the letter grade and each value is the proportion
@@ -153,7 +214,15 @@ const failRate: number = IMPLEMENT_THIS
  *
  * For example: `{HD: 0.2, D: 0.25, C: 0.3, P: 0.15, N: 0.1}`
  */
-const gradeDistribution: Record<Grade, number> = IMPLEMENT_THIS
+const gradeDistribution: Record<Grade, number> = allGrades.reduce(
+	(acc, grade) => ({
+		...acc,
+		[grade]:
+			students.filter(compose(equals(grade), calculateUnitGrade)).length /
+			students.length,
+	}),
+	{},
+) as Record<Grade, number>
 
 // Don't change anything below this line! (needed for the tests to work)
 export {

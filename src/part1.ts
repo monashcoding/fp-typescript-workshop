@@ -7,24 +7,24 @@ import {IMPLEMENT_THIS} from './utils.js'
 // ***********
 
 /** Multiplies a number by 2. */
-const double = (x: number): number => IMPLEMENT_THIS
+const double = (x: number): number => x * 2
 // See if you can reimplement double without using any return statements!
 
 /** Adds 2 numbers. */
 const add =
 	(x: number) =>
 	(y: number): number =>
-		IMPLEMENT_THIS
+		x + y
 
 const numbers = [3, 6, 6, 2, 5, 8]
 
 /** `numbers` multiplied by 2. */
-const doubledNumbers: readonly number[] = IMPLEMENT_THIS
+const doubledNumbers: readonly number[] = numbers.map(double)
 /** `numbers` with 1 added to them. */
-const add1Numbers: readonly number[] = IMPLEMENT_THIS
+const add1Numbers: readonly number[] = numbers.map(add(1))
 
 /** The even `numbers`. */
-const evenNumbers: readonly number[] = IMPLEMENT_THIS
+const evenNumbers: readonly number[] = numbers.filter(x => x % 2 === 0)
 
 // *******
 // reduce
@@ -33,10 +33,10 @@ const evenNumbers: readonly number[] = IMPLEMENT_THIS
 // Use reduce to implement sum and product:
 
 /** Calculates the sum of an array of numbers.  */
-const sum = (xs: readonly number[]): number => IMPLEMENT_THIS
+const sum = (xs: readonly number[]): number => xs.reduce((x, y) => x + y, 0)
 
 /** Calculates the product of an array of numbers.  */
-const product = (xs: readonly number[]): number => IMPLEMENT_THIS
+const product = (xs: readonly number[]): number => xs.reduce((x, y) => x * y, 1)
 
 // Challenge: Reimplement map and filter using reduce!
 // Try to do this without mutating any arrays. (don't worry about efficiency)
@@ -45,10 +45,10 @@ const product = (xs: readonly number[]): number => IMPLEMENT_THIS
 // (this doesn't mutate `xs` but creates a new array)
 
 const myMap = <T, U>(xs: readonly T[], fn: (x: T) => U): readonly U[] =>
-	IMPLEMENT_THIS
+	xs.reduce<readonly U[]>((acc, x) => [...acc, fn(x)], [])
 
 const myFilter = <T>(xs: readonly T[], fn: (x: T) => boolean): readonly T[] =>
-	IMPLEMENT_THIS
+	xs.reduce<readonly T[]>((acc, x) => (fn(x) ? [...acc, x] : acc), [])
 
 // ********
 // compose
@@ -68,7 +68,7 @@ Implement the `compose` function below:
 const compose =
 	<A, B, C>(f: (b: B) => C, g: (a: A) => B): ((x: A) => C) =>
 	(x: A): C =>
-		IMPLEMENT_THIS
+		f(g(x))
 
 /*
 `compose` is an example of a higher-order function: it takes functions as
@@ -77,8 +77,8 @@ parameters and returns a new function.
 Let's try using it:
 */
 
-/** Adds an exclamation mark to the end of a string. */
-const exclaim = (string: string): string => IMPLEMENT_THIS
+/** Adds an exclamation mark to a string. */
+const exclaim = (string: string): string => string + '!'
 
 /** Converts something to a string. */
 // the `unknown` type means 'anything'
@@ -91,10 +91,10 @@ const toString: (x: unknown) => string = String
  * - `exclaimNumbers([1, 2, 3])` => `['1!', '2!', '3!']`
  */
 const exclaimNumbers = (xs: readonly number[]): readonly string[] =>
-	IMPLEMENT_THIS
+	xs.map(compose(exclaim, toString))
 
 /** Returns whether a number is even. */
-const isEven = (x: number): boolean => IMPLEMENT_THIS
+const isEven = (x: number): boolean => x % 2 === 0
 
 /**
  * Given an array of arrays of numbers, return the arrays that have an even sum.
@@ -103,7 +103,7 @@ const isEven = (x: number): boolean => IMPLEMENT_THIS
  */
 const evenSums = (
 	xs: readonly (readonly number[])[],
-): readonly (readonly number[])[] => IMPLEMENT_THIS
+): readonly (readonly number[])[] => xs.filter(compose(isEven, sum))
 
 // Don't change anything below this line! (needed for the tests to work)
 export {

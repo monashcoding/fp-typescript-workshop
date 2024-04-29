@@ -17,7 +17,7 @@ import {IMPLEMENT_THIS} from './utils.js'
 const isDivisibleBy =
 	(d: number) =>
 	(x: number): boolean =>
-		IMPLEMENT_THIS
+		x % d === 0
 
 /** Returns an array of numbers [start, start+1, …, end-1]. */
 const range = (start: number, end: number): readonly number[] =>
@@ -28,14 +28,15 @@ const range = (start: number, end: number): readonly number[] =>
  * For example:
  * - `multiplesOf3Or5UpTo(15)` => `[3, 5, 6, 9, 10, 12]`
  */
-const multiplesOf3Or5UpTo = (n: number): readonly number[] => IMPLEMENT_THIS
+const multiplesOf3Or5UpTo = (n: number): readonly number[] =>
+	range(1, n).filter(x => isDivisibleBy(3)(x) || isDivisibleBy(5)(x))
 
 /**
  * The solution to the Euler Problem 1: the sum of all the multiples of 3 or 5
  * below 1000.
  * @see https://projecteuler.net/problem=1
  */
-const eulerProblem1: number = IMPLEMENT_THIS
+const eulerProblem1: number = sum(multiplesOf3Or5UpTo(1000))
 
 // ****************
 // Euler Problem 6
@@ -50,14 +51,15 @@ const eulerProblem1: number = IMPLEMENT_THIS
  *   - The square of the sum of the first three natural numbers is (1 + 2 + 3)² = 36.
  *   - The difference is 36 - 14 = 22.
  */
-const sumSquareDifference = (n: number): number => IMPLEMENT_THIS
+const sumSquareDifference = (n: number): number =>
+	sum(range(1, n + 1)) ** 2 - sum(range(1, n + 1).map(x => x ** 2))
 
 /**
  * The solution to the Euler problem 6: the difference between the sum of the
  * squares of the first one hundred natural numbers and the square of the sum.
  * @see https://projecteuler.net/problem=6
  */
-const eulerProblem6: number = IMPLEMENT_THIS
+const eulerProblem6: number = sumSquareDifference(100)
 
 // ******
 // Bonus
@@ -74,7 +76,12 @@ const eulerProblem6: number = IMPLEMENT_THIS
 const multiplesOfUpTo =
 	(ds: readonly number[]) =>
 	(n: number): readonly number[] =>
-		IMPLEMENT_THIS
+		range(1, n).filter(
+			ds.map(isDivisibleBy).reduce(
+				(acc, f) => x => acc(x) || f(x),
+				() => false,
+			),
+		)
 
 /**
  * Generalised Euler problem 1. `generalEulerProblem1(divisors)(n)` is the sum
@@ -83,7 +90,7 @@ const multiplesOfUpTo =
  * `generalEulerProblem1([3, 5])(1000)`.
  */
 const generalEulerProblem = (ds: readonly number[]): ((n: number) => number) =>
-	IMPLEMENT_THIS
+	compose(sum, multiplesOfUpTo(ds))
 
 // Don't change anything below this line! (needed for the tests to work)
 export {
